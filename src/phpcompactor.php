@@ -45,7 +45,6 @@ foreach ($files as $f) {
           case T_DOC_COMMENT:
           case T_OPEN_TAG:
           case T_CLOSE_TAG:
-            print "?";
             break;
           case T_WHITESPACE:
             fwrite($out, ' ');
