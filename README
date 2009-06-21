@@ -1,0 +1,9 @@
+phpcompressor
+Author: M Butcher (matt@aleph-null.tv)
+Copyright 2009
+Licensed under an MIT-style license. See COPYING-MIT.
+
+This package provides a very simple PHP code compressor.
+
+Usage:
+php ./phpcompactor.php compressed_file.php source_file.php 
