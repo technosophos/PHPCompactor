@@ -6,32 +6,28 @@
  *
  * Modified by Jurriaan Pruis - Better 'compression'
  *
- * TODO: merge the two foreach structures
- * TODO: more tokens.. for example T_PRINT & T_ECHO (Problems when printing constants) echo'test'; and echo$test; are allowed, echoENT_QUOTES; not (of course)
- * TODO: strip require/include (_once) paths from source
- *
- */
+ **/
  
 if ($argc < 3) {
-  print "Strip unecessary data from PHP source files.\n\n\tUsage: php phpcompactor.php DESTINATION.php SOURCE.php";
+  print "Strip unnecessary data from PHP source files.\n\n\tUsage: php phpcompactor.php DESTINATION.php SOURCE.php\n";
   exit;
 }
  
- 
 $source = $argv[2];
 $target = $argv[1];
-//print "Compacting $source into $target.\n";
+print "Compacting $source into $target.\n";
  
 include $source;
  
 $files = get_included_files();
- 
+$before = 0;
 $out = fopen($target, 'w');
 fwrite($out, '<?php' . PHP_EOL);
 $next = false;
 foreach ($files as $f) {
-  echo $f. "\n";
   if ($f !== __FILE__) {
+    echo '+ compacting \''.$f. "'\n";
+    $before += filesize($f);
     $contents = trim(file_get_contents($f));
     $tokens = token_get_all($contents);
     $previous = false;
@@ -122,13 +118,10 @@ foreach ($files as $f) {
           case T_CONCAT_EQUAL:
             $next = true;
             fwrite($out, $token[1]);
-                          $token[0] = token_name($token[0]);
-  
             break;
           default:
             $next = false;
             fwrite($out, $token[1]);
-                      $token[0] = token_name($token[0]);
 
         }
  
@@ -139,4 +132,10 @@ foreach ($files as $f) {
 }
 
 fclose($out);
+$after = filesize($target);
+$percent = sprintf('%.2f%%', (($after/$before) - 1)*100);
+echo 'Compacted '.count($files) . " files \n";
+echo "Filesize report: $before bytes to $after bytes ($percent)\n";
+echo "Done.\n";
+
 ?>
