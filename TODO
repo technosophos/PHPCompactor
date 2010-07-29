@@ -1,4 +1,3 @@
-- @Matt: fix COPYING, licence is for Querypath, not for PHPCompactor
 - make testcases
 - more tokens.. for example T_PRINT & T_ECHO (Problems when printing constants) echo'test'; and echo$test; are allowed, echoENT_QUOTES; not (of course)
 - merge the two foreach structures (is this possible?, maybe by making a for loop previous == $tokens[$i-1]) 

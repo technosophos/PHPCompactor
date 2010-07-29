@@ -1,6 +1,6 @@
-QueryPath: Find your way
+PHPCompactor
 Matt Butcher <mbutcher@aleph-null.tv>
-Copyright (C) 2009 Matt Butcher
+Copyright (C) 2009-2010 Matt Butcher
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
