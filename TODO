@@ -12,7 +12,7 @@ Becomes
 <?php
 echo'a';echo"$a";echo"a";echo" $a?";echo"${A}";print$a
 * merge the two foreach structures (is this possible?, maybe by making a for loop previous == $tokens[$i-1]) 
-- strip require/include (_once) paths from source
-- make OO compactor lib
+* strip require/include (_once) paths from source
+* make OO compactor lib
 - create function for single files
 - treat inline HTML better (also HTML compression?, internally i'm using a simple regexp: /(?<=>)\s+(?=<)/)
