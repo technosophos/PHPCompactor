@@ -12,4 +12,6 @@ This package provides a very simple PHP code compressor. It reads a single sourc
 
 Usage:
 
-  php ./src/phpcompactor.php compressed_file.php source_file.php 
+    php ./src/phpcompactor.php compressed_file.php source_file.php 
+    
+This will compress `source_file.php` and all of its dependencies into `compressed_file.php`.
