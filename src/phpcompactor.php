@@ -20,11 +20,18 @@ $target = $argv[1];
 print "Compacting $source into $target.\n";
 $compactor = new Compactor($target);
 
+/*
 $before = get_included_files();
 include $source;
 $files = array_diff(get_included_files(),$before);
 
 foreach($files as $file) $compactor->compact($file);
+*/
+//$compactor->exclude(array('test.php'));
+//print_r($compactor->getExcludedFiles());
+
+$compactor->compactAll($source);
+
 
 $compactor->report();
 $compactor->close();

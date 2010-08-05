@@ -26,6 +26,9 @@ class Compactor {
   private $compacted = array();
   private $handle;
   
+  /** The files excluded during a {@link compactAll()}. */
+  protected $excludes = array();
+  
   public function __construct($outfile) {
     $this->handle = fopen($outfile, 'w');
     fwrite($this->handle, '<?php' . PHP_EOL);
@@ -35,6 +38,47 @@ class Compactor {
     $compact = new CompactFile($file,$this->handle);
     $compact->compact();
     $this->compacted[] = $compact;
+  }
+  
+  /**
+   * Exclude these files from compacting.
+   *
+   * @param array $files
+   *  An array of files to exclude.
+   */
+  public function exclude($files) {
+    $expanded = array();
+    // Expand wildcards:
+    foreach ($files as $pattern) {
+      $expanded += glob($pattern);
+    }
+    
+    // Probably should do something to remove duplicates.
+    
+    $this->excludes = $expanded;
+  }
+  
+  /**
+   * Returns the expanded exclusion list.
+   */
+  public function getExcludedFiles() {
+    return $this->excludes;
+  }
+  
+  /**
+   * Compact the given file and all included files.
+   *
+   * Files specified in the 'excludes' list will not be compacted here.
+   *
+   * @param string $baseFile
+   *  The base file to exclude.
+   */
+  public function compactAll($baseFile) {
+    $before = get_included_files();
+    include $baseFile;
+    $files = array_diff(get_included_files(),$before);
+
+    foreach($files as $file) $this->compact($file);
   }
   
   public function report() {
