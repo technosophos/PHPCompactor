@@ -29,11 +29,23 @@ class Compactor {
   /** The files excluded during a {@link compactAll()}. */
   protected $excludes = array();
   
-  public function __construct($outfile) {
-    $this->handle = fopen($outfile, 'w');
+  /**
+   * Creates a new Compactor object.
+   *
+   * @param string $output
+   *  The file to which the compressed output is written.
+   */
+  public function __construct($output) {
+    $this->handle = fopen($output, 'w');
     fwrite($this->handle, '<?php' . PHP_EOL);
   }
   
+  /**
+   * Compacts a single file.
+   *
+   * @param string $file
+   *  The file to compact.
+   */
   public function compact($file) {
     $compact = new CompactFile($file,$this->handle);
     $compact->compact();
@@ -50,12 +62,12 @@ class Compactor {
     $expanded = array();
     // Expand wildcards:
     foreach ($files as $pattern) {
-      $expanded += glob($pattern);
+      $expanded += glob($pattern,GLOB_NOSORT);
     }
     
     // Probably should do something to remove duplicates.
     
-    $this->excludes = $expanded;
+    $this->excludes = array_unique($expanded); // This is ok?
   }
   
   /**
@@ -81,22 +93,30 @@ class Compactor {
     foreach($files as $file) $this->compact($file);
   }
   
+  /**
+   * Displays a report with information about the compressed files
+   */
   public function report() {
     $lenbefore = 0;
     $lenafter = 0;
+    echo "\nReport:\n=======\n";
     foreach($this->compacted as $compact) {
-      $lenbefore += $compact->filesize;
+      printf("Compacted %s -- filesize: %dB, compressed size: %dB, %.2f%%\n", basename($compact->filename), $compact->filesize,$compact->compressedsize,(($compact->compressedsize/$compact->filesize) - 1)*100);
+      $lenbefore += $compact->filesize;     
     }
     $filecount = count($this->compacted);
-    $lenafter= ftell($this->handle);
+    $lenafter = ftell($this->handle);
     $percent = sprintf('%.2f%%', (($lenafter/$lenbefore) - 1)*100);
     echo "Compacted $filecount files into one \n";
     echo "Filesize report: $lenbefore bytes to $lenafter bytes ($percent)\n";
     echo "Done.\n";
   }
+  
+  /**
+   * Closes the file
+   */
   public function close() {
     fclose($this->handle);
   }
-  
   
 }
