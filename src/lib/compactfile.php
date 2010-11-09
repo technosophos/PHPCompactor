@@ -8,7 +8,7 @@
  **/
  
 class CompactFile {
-  private $out;
+  private $out, $filterfunc;
   public $filesize, $compressedsize, $filename;
   
   /**
@@ -19,10 +19,14 @@ class CompactFile {
    * @param resource $out
    *  The output filepointer to which the compressed data is appended.
    */
-  public function __construct($filename,$out) {
+  public function __construct($filename,$out,$filterfunc = null) {
     $this->filename = $filename;
     $this->filesize = filesize($filename);
     $this->out = $out;
+    if($filterfunc == null) {
+      $filterfunc = function ($in) {return $in;};
+    }
+    $this->filterfunc = $filterfunc;
   }
   
   /**
@@ -79,6 +83,7 @@ class CompactFile {
   }
   
   private function getTokens() {
-    return token_get_all(trim(file_get_contents($this->filename)));
+    $func = $this->filterfunc;
+    return token_get_all($func(trim(file_get_contents($this->filename))));
   }
 }

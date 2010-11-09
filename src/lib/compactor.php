@@ -8,10 +8,10 @@
  **/
 require_once "compactfile.php";
 class Compactor {
-  public static $safechar = array('?',';',':','}','{','(',')',',','=','|','&','>','<','.','-','+','*','/');
+  public static $safechar = array('?','!',';',':','}','{','(',')',',','=','|','&','>','<','.','-','+','*','%','/');
   public static $semisafe = array('"','\'');
   public static $removable = array(T_COMMENT,T_COMMENT,T_DOC_COMMENT,T_OPEN_TAG,T_CLOSE_TAG);
-  public static $requires = array(T_REQUIRE_ONCE,T_INCLUDE_ONCE); // use require_once and include_once for including of static files
+  public static $requires = array();//array(T_REQUIRE_ONCE,T_INCLUDE_ONCE); // use require_once and include_once for including of static files
   public static $aftertoken = array(T_BOOLEAN_OR, T_BOOLEAN_AND, T_IS_EQUAL, T_IS_GREATER_OR_EQUAL, 
                            T_IS_IDENTICAL, T_IS_NOT_EQUAL, T_IS_NOT_IDENTICAL, T_IS_SMALLER_OR_EQUAL, 
                            T_PLUS_EQUAL, T_MINUS_EQUAL, T_OR_EQUAL, T_DEC, T_DOUBLE_ARROW, 
@@ -25,7 +25,7 @@ class Compactor {
   
   private $compacted = array();
   private $handle;
-  
+  private $basepath,$filter = null;
   /** The files excluded during a {@link compactAll()}. */
   protected $excludes = array();
   
@@ -33,11 +33,14 @@ class Compactor {
    * Creates a new Compactor object.
    *
    * @param string $output
-   *  The file to which the compressed output is written.
+   *  The file to which the compressed output is written
    */
-  public function __construct($output) {
+  public function __construct($output,$header='') {
     $this->handle = fopen($output, 'w');
-    fwrite($this->handle, '<?php' . PHP_EOL);
+    fwrite($this->handle, '<?php' . PHP_EOL.$header.PHP_EOL);
+  }
+  public function setFilter($filter) {
+    $this->filter = $filter;
   }
   
   /**
@@ -47,35 +50,36 @@ class Compactor {
    *  The file to compact.
    */
   public function compact($file) {
-    $compact = new CompactFile($file,$this->handle);
+    $compact = new CompactFile($file,$this->handle,$this->filter);
     $compact->compact();
     $this->compacted[] = $compact;
   }
-  
   /**
-   * Exclude these files from compacting.
+   * Returns the compacted files.
+   */
+   
+  public function getCompactedFiles() {
+    return $this->compacted;
+  }
+  /**
+   * Exclude this file from compacting.
    *
    * @param array $files
    *  An array of files to exclude.
    */
-  public function exclude($files) {
-    $expanded = array();
-    // Expand wildcards:
-    foreach ($files as $pattern) {
-      $expanded += glob($pattern,GLOB_NOSORT);
-    }
-    
-    // Probably should do something to remove duplicates.
-    
-    $this->excludes = array_unique($expanded); // This is ok?
+  public function exclude($file) {
+  
+    $this->excludes[] = $file;
+
   }
   
   /**
    * Returns the expanded exclusion list.
-   */
+   
   public function getExcludedFiles() {
     return $this->excludes;
   }
+  */
   
   /**
    * Compact the given file and all included files.
@@ -88,9 +92,14 @@ class Compactor {
   public function compactAll($baseFile) {
     $before = get_included_files();
     include $baseFile;
+    $this->basepath = dirname($baseFile);
+    $this->excludes = array_unique($this->excludes);
+    
     $files = array_diff(get_included_files(),$before);
 
-    foreach($files as $file) $this->compact($file);
+    foreach($files as $file) {
+      if(!in_array(str_replace($this->basepath.'/','',$file),$this->excludes)) $this->compact($file);
+    }
   }
   
   /**
