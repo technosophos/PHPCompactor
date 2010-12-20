@@ -22,7 +22,15 @@ $compactor = new Compactor($target);
 
 //$compactor->exclude(array('*'));
 //print_r($compactor->getExcludedFiles());
-
+/*
+// Use filters like this (Useable for things like stripping debug-only logging):
+$compactor->setFilter(function ($in)
+{
+  $in = preg_replace('/.*\/\/ DEBUG ONLY/','',$in);
+  return preg_replace('/.*->logger->.*/','',$in);
+});
+*/
+$compactor->exclude('framework.php');
 $compactor->compactAll($source);
 
 
